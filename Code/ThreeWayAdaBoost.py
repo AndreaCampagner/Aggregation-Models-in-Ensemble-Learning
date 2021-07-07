@@ -5,8 +5,9 @@ from warnings import simplefilter
 import numpy as np
 import logging
 from sklearn.preprocessing import normalize
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, balanced_accuracy_score,roc_auc_score,f1_score
 import time
+from sklearn.base import clone
 
 simplefilter(action='ignore', category=FutureWarning)
 np.set_printoptions(suppress=True)
@@ -24,7 +25,7 @@ def train(X_train, y_train, classificatore, iterations, nLabel, Label):
     
     # istanze di adaboost
     for t in range(iterations):
-        Estimators.append(classificatore.fit(X_train, y_train, D))
+        Estimators.append(clone(classificatore).fit(X_train, y_train, D))
         listOFsubsets = ut.three_way(X_train, Estimators[t],nLabel)
         # salvo i subset in un array di dimensione (Niterations,nRows)
         Ht.append(listOFsubsets)
@@ -81,5 +82,10 @@ def predict(X_test, y_test, model, nLabel, Label):
 
     y_pred = ut.weightedVoting(transposedArray, nLabel, wtarray)
 
-    return accuracy_score(y_test, y_pred)
+    return {
+        'acc': accuracy_score(y_test, y_pred),
+        'balacc': balanced_accuracy_score(y_test, y_pred),
+        'microf1': f1_score(y_test, y_pred, average='micro'),
+        'macrof1': f1_score(y_test, y_pred, average='macro')
+    }
 

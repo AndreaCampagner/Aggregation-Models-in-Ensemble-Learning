@@ -2,7 +2,7 @@
 from Code import Utility as ut
 from math import log 
 from warnings import simplefilter
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score,balanced_accuracy_score,roc_auc_score,f1_score
 from sklearn.preprocessing import normalize
 import numpy as np
 import logging
@@ -93,4 +93,9 @@ def predict(X_test, y_test, model, nLabel, Label):
         somma=np.prod(RowsWithWt,axis=0)
         y_pred.append(np.argmax(somma))
 
-    return accuracy_score(y_test, y_pred)
+    return {
+        'acc': accuracy_score(y_test, y_pred),
+        'balacc': balanced_accuracy_score(y_test, y_pred),
+        'microf1': f1_score(y_test, y_pred, average='micro'),
+        'macrof1': f1_score(y_test, y_pred, average='macro')
+    }

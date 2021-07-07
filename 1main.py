@@ -1,7 +1,5 @@
 from typing import Counter
 import Settings as clf
-from Code import ThreeWayAdaBoost as customAda
-from Code import PossAdaBoost as customAda2
 from Code import Approval
 from Code import Plurality
 from Code import preprocessing
@@ -16,21 +14,14 @@ from Code import Possibilistic as Poss
 from Code import PossibilisticProd as PossProd
 import logging
 import os
-import collections
-import multiprocessing
+from multiprocessing import Pool
 logging.basicConfig(level=logging.ERROR)
-
-if not os.path.exists('./Results'):
-        os.makedirs('./Results')
-if not os.path.exists('./Results/{}'.format('JSON')):
-        os.makedirs('./Results/{}'.format('JSON'))
-
-ut.CleanJson()
 
 
 def Execution(strModello,nameDataset,dataset,Train,Predict):
-    accuracy=CV.main(strModello,dataset,Train,Predict,nameDataset)
-    ut.WriteOnDict(nameDataset,strModello,accuracy)
+    metrics=CV.main(strModello,dataset,Train,Predict,nameDataset)
+    for key in metrics:
+        ut.WriteOnDict(nameDataset,strModello+key, metrics[key])
 
 
 def Preparation(url):
@@ -54,64 +45,55 @@ def Preparation(url):
 
     'Scegliere quali modelli utilizzare commentando quelli non necessari'
 
-    Execution('aa_Normale_AdaBoost',nameDataset,dataset,ut.GenericTrain,ut.NormalePredict)
-    Execution('ab_Approval_AdaBoost',nameDataset,dataset,ut.GenericTrain,Approval.predict)
-    Execution('ac_Plurality_AdaBoost',nameDataset,dataset,ut.GenericTrain,Plurality.predict)
-    Execution('ad_Borda_AdaBoost',nameDataset,dataset,ut.GenericTrain,Borda.predict)
-    Execution('ae_Copeland_AdaBoost',nameDataset,dataset,ut.GenericTrain,Copeland.predict)
-    Execution('af_Poss_AdaBoost',nameDataset,dataset,ut.GenericTrain,Poss.predict)
-    Execution('ag_PossProd_AdaBoost',nameDataset,dataset,ut.GenericTrain,PossProd.predict)
-    Execution('ah_Threeway_AdaBoost',nameDataset,dataset,ut.GenericTrain,ThreeWay.predict)
+    Execution('Normal_AdaBoost',nameDataset,dataset,ut.GenericTrain,ut.NormalePredict)
+    Execution('Normal_GradientBoosting',nameDataset,dataset,ut.GenericTrain,ut.NormalePredict)
+    Execution('Normal_XGBoost',nameDataset,dataset,ut.GenericTrain,ut.NormalePredict)
 
-    Execution('ba_Normale_ExtraTrees',nameDataset,dataset,ut.GenericTrain,ut.NormalePredict)   
-    Execution('bb_Approval_ExtraTrees',nameDataset,dataset,ut.GenericTrain,Approval.predict)
-    Execution('bc_Plurality_ExtraTrees',nameDataset,dataset,ut.GenericTrain,Plurality.predict)
-    Execution('bd_Borda_ExtraTrees',nameDataset,dataset,ut.GenericTrain,Borda.predict)
-    Execution('be_Copeland_ExtraTrees',nameDataset,dataset,ut.GenericTrain,Copeland.predict)
-    Execution('bf_Poss_ExtraTrees',nameDataset,dataset,ut.GenericTrain,Poss.predict)
-    Execution('bg_PossProd_ExtraTrees',nameDataset,dataset,ut.GenericTrain,PossProd.predict)
-    Execution('bh_Threeway_ExtraTrees',nameDataset,dataset,ut.GenericTrain,ThreeWay.predict)
+    Execution('Normal_ExtraTrees',nameDataset,dataset,ut.GenericTrain,ut.NormalePredict)   
+    Execution('Approval_ExtraTrees',nameDataset,dataset,ut.GenericTrain,Approval.predict)
+    Execution('Plurality_ExtraTrees',nameDataset,dataset,ut.GenericTrain,Plurality.predict)
+    Execution('Borda_ExtraTrees',nameDataset,dataset,ut.GenericTrain,Borda.predict)
+    Execution('Copeland_ExtraTrees',nameDataset,dataset,ut.GenericTrain,Copeland.predict)
+    Execution('Poss_ExtraTrees',nameDataset,dataset,ut.GenericTrain,Poss.predict)
+    Execution('PossProd_ExtraTrees',nameDataset,dataset,ut.GenericTrain,PossProd.predict)
+    Execution('Threeway_ExtraTrees',nameDataset,dataset,ut.GenericTrain,ThreeWay.predict)
 
-    Execution('ca_Normale_RandomForest',nameDataset,dataset,ut.GenericTrain,ut.NormalePredict)
-    Execution('cb_Approval_RandomForest',nameDataset,dataset,ut.GenericTrain,Approval.predict)
-    Execution('cc_Plurality_RandomForest',nameDataset,dataset,ut.GenericTrain,Plurality.predict)
-    Execution('cd_Borda_RandomForest',nameDataset,dataset,ut.GenericTrain,Borda.predict)
-    Execution('ce_Copeland_RandomForest',nameDataset,dataset,ut.GenericTrain,Copeland.predict)
-    Execution('cf_Poss_RandomForest',nameDataset,dataset,ut.GenericTrain,Poss.predict)
-    Execution('cg_PossProd_RandomForest',nameDataset,dataset,ut.GenericTrain,PossProd.predict)
-    Execution('ch_Threeway_RandomForest',nameDataset,dataset,ut.GenericTrain,ThreeWay.predict)
+    Execution('Normal_RandomForest',nameDataset,dataset,ut.GenericTrain,ut.NormalePredict)
+    Execution('Approval_RandomForest',nameDataset,dataset,ut.GenericTrain,Approval.predict)
+    Execution('Plurality_RandomForest',nameDataset,dataset,ut.GenericTrain,Plurality.predict)
+    Execution('Borda_RandomForest',nameDataset,dataset,ut.GenericTrain,Borda.predict)
+    Execution('Copeland_RandomForest',nameDataset,dataset,ut.GenericTrain,Copeland.predict)
+    Execution('Poss_RandomForest',nameDataset,dataset,ut.GenericTrain,Poss.predict)
+    Execution('PossProd_RandomForest',nameDataset,dataset,ut.GenericTrain,PossProd.predict)
+    Execution('Threeway_RandomForest',nameDataset,dataset,ut.GenericTrain,ThreeWay.predict)
 
-    Execution('da_SPA_ExtraTree',nameDataset,dataset,SPA.train,SPA.predict)
-    Execution('db_SPA_DecisionTree',nameDataset,dataset,SPA.train,SPA.predict)
+    Execution('SPA_ExtraTree',nameDataset,dataset,SPA.train,SPA.predict)
+    Execution('SPA_DecisionTree',nameDataset,dataset,SPA.train,SPA.predict)
 
-    Execution('ea_3WAda_ExtraTree',nameDataset,dataset,customAda.train,customAda.predict)
-    Execution('eb_3WAda_DecisionTree',nameDataset,dataset,customAda.train,customAda.predict)
+if __name__ == '__main__':  
+    datasets=clf.getDataset()
 
-    Execution('fa_PossAda_ExtraTree',nameDataset,dataset,customAda2.train,customAda2.predict)
-    Execution('fb_PossAda_DecisionTree',nameDataset,dataset,customAda2.train,customAda2.predict)
+    if not os.path.exists('./Results'):
+        os.makedirs('./Results')
+    if not os.path.exists('./Results/{}'.format('JSON')):
+        os.makedirs('./Results/{}'.format('JSON'))
 
-    Execution('ga_Normale_ExtraTree',nameDataset,dataset,ut.GenericTrain,ut.NormalePredict)
-    Execution('gb_Normale_DecisionTree',nameDataset,dataset,ut.GenericTrain,ut.NormalePredict)
+    ut.CleanJson(datasets)
 
+    multicore=True
 
-   
-datasets=clf.getDataset()
-
-
-'''
-Multicore execution
-'''
-jobs = []
-for i in range(len(datasets)):
-    p = multiprocessing.Process(target=Preparation,args=(datasets[i],))
-    jobs.append(p)
-    p.start()
-
-'''
-Singol Core Execution
-'''
-# for x in datasets:
-#     Preparation(x)
+    if multicore:
+        '''
+        Multicore execution
+        '''
+        with Pool(8) as p:
+            print(p.map(Preparation, datasets))
+    else:
+        '''
+        Single Core Execution
+        '''
+        for x in datasets:
+            Preparation(x)
 
 
 

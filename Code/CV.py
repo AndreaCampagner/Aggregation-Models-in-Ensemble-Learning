@@ -3,6 +3,7 @@ from Code import Utility as ut
 import Settings as st
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import train_test_split
+import numpy as np
 import time
 
 
@@ -13,7 +14,7 @@ import logging
 
 
 def main(strModello, dataset, Train, Predict, nameDataset):
-    modelName = strModello.split('_')[2]
+    modelName = strModello.split('_')[1]
     combinations = ut.Grid(st.getGrid(modelName))
     splitCV = st.SplitCV()
     iterations=st.getIterations()
@@ -26,12 +27,16 @@ def main(strModello, dataset, Train, Predict, nameDataset):
 
     # variabile per salvare le accuracy durante la cross validation
     AccArrayCV = []
+    BalAccArrayCV = []
+    MicroF1ArrayCV = []
+    MacroF1ArrayCV = []
 
     X, y = dataset
     nLabel = len(set(y))
     Label = set(y)
 
     skf = StratifiedKFold(n_splits=splitCV, shuffle=True, random_state=0)
+    np.random.seed(0)
 
     for train_index, test_index in skf.split(X, y):
 
@@ -45,13 +50,12 @@ def main(strModello, dataset, Train, Predict, nameDataset):
 
         # vengono provate tutte le combinazioni degli iper parametri sul validation set
         for combination in combinations:
-
             clf = st.SceltaClassificatore(
                 modelName, iterations, combination)
             model = Train(X_train_val, y_train_val, clf,
                           iterations, nLabel, Label)
             accuracyTestVal = Predict(
-                X_test_val, y_test_val, model, nLabel, Label)
+                X_test_val, y_test_val, model, nLabel, Label)['balacc']
 
             EstimatorsOfEstimators.append(model)
             AccArrayHyperparameter.append(accuracyTestVal)
@@ -63,14 +67,28 @@ def main(strModello, dataset, Train, Predict, nameDataset):
 
 
         # viene testato sul x_test per ottenere il valore delle CV
-        AccArrayCV.append(Predict(X_test, y_test, bestEstimator, nLabel, Label))
+        results = Predict(X_test, y_test, bestEstimator, nLabel, Label)
+        AccArrayCV.append(results['acc'])
+        BalAccArrayCV.append(results['balacc'])
+        MicroF1ArrayCV.append(results['microf1'])
+        MacroF1ArrayCV.append(results['macrof1'])
         EstimatorsOfEstimators = []
         AccArrayHyperparameter = []
 
 
     executionTime = time.time() - start_time
-    accCV = round(mean(AccArrayCV), 3)
+    accCV = mean(AccArrayCV)
+    balaccCV = mean(BalAccArrayCV)
+    microf1CV = mean(MicroF1ArrayCV)
+    macrof1CV = mean(MacroF1ArrayCV)
 
     logging.error('{} {} {} {} -------- {}s'.format(nameDataset, strModello,
-                                          np.around(AccArrayCV, decimals=3), accCV, round(executionTime,3)))
-    return accCV
+                                          np.around(BalAccArrayCV, decimals=3), np.around(balaccCV, decimals=3),
+                                           round(executionTime,3)))
+    return {
+        'acc': accCV,
+        'balacc': balaccCV,
+        'microf1': microf1CV,
+        'macrof1': macrof1CV,
+        'time': executionTime
+    }

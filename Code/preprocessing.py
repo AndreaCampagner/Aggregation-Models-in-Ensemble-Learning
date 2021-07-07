@@ -59,11 +59,14 @@ def numeroClassi(y):
     return len(set(y))
 
 
-def allPreprocesingSteps(path, max_samples):
+def allPreprocesingSteps(path, max_samples = -1, undersample = False):
 
     my_data = loadDatasetToPandas(path)
     ninitialRows = my_data.shape[0]
-    my_data = undersampling(my_data, max_samples)
+    if undersample:
+        if max_samples == -1:
+            max_samples = ninitialRows
+        my_data = undersampling(my_data, max_samples)
     (X, y) = splitXY(my_data)
 
     scaler=MinMaxScaler(feature_range=(0,1))

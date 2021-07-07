@@ -1,7 +1,7 @@
 from copy import copy
 import numpy as np
 from sklearn.ensemble import BaggingClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score,balanced_accuracy_score,roc_auc_score,f1_score
 from collections import Counter
 import copy
 
@@ -122,7 +122,12 @@ def predict(X_test, y_test, model, nLabel, Label):
 
     # calcolo l'accuratezza
     
-    acc_RF_SPA = accuracy_score(y_test, predictions)
+    y_pred = predictions
 
 
-    return acc_RF_SPA
+    return {
+        'acc': accuracy_score(y_test, y_pred),
+        'balacc': balanced_accuracy_score(y_test, y_pred),
+        'microf1': f1_score(y_test, y_pred, average='micro'),
+        'macrof1': f1_score(y_test, y_pred, average='macro')
+    }

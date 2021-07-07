@@ -1,8 +1,10 @@
 from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import ExtraTreeClassifier
 from sklearn.tree import DecisionTreeClassifier
+from xgboost import XGBClassifier
 
 
 def SceltaClassificatore(classificatore, iterations, combination):
@@ -10,6 +12,11 @@ def SceltaClassificatore(classificatore, iterations, combination):
     # classificatori usati per il bagging
     if classificatore == 'AdaBoost':
         return AdaBoostClassifier(random_state=0, n_estimators=iterations, **combination)
+    if classificatore == 'GradientBoosting':
+        return GradientBoostingClassifier(random_state=0, n_estimators=iterations, **combination)
+    if classificatore == 'XGBoost':
+        return XGBClassifier(random_state=0, n_estimators=iterations,
+         booster='gbtree', label_encoder=False, eval_metric='mlogloss', **combination)
     if classificatore == 'ExtraTrees':
         return ExtraTreesClassifier(random_state=0, n_estimators=iterations, **combination)
     if classificatore == 'RandomForest':
@@ -26,31 +33,55 @@ def getGrid(modelName):
     if modelName == 'AdaBoost':
         return {
             'algorithm': ["SAMME",'SAMME.R'],
+            'learning_rate': [1.0, 0.5, 0.2, 0.1, 0.05, 0.01, 0.001],
+            'base_estimator':[
+                DecisionTreeClassifier(max_depth=1),
+                DecisionTreeClassifier(max_depth=2),
+                DecisionTreeClassifier(max_depth=3),
+                DecisionTreeClassifier(max_depth=5),
+                DecisionTreeClassifier(max_depth=10),
+                DecisionTreeClassifier(max_depth=20),
+                DecisionTreeClassifier(max_depth=50),
+                DecisionTreeClassifier(max_depth=100),
+                DecisionTreeClassifier(max_depth=None)]
+        }
+    if modelName == 'GradientBoosting':
+        return {
+            'learning_rate': [1.0, 0.5, 0.2, 0.1, 0.05, 0.01, 0.001],
+            'subsample': [1.0, 0.9, 0.75, 0.5],
+            'max_depth':[1,2,3,5,10,20,50,100,None]
+        }
+    if  modelName == 'XGBoost':
+        return {
+            'learning_rate': [1.0, 0.5, 0.2, 0.1, 0.05, 0.01, 0.001],
+            'subsample': [1.0, 0.9, 0.75, 0.5],
+            'max_depth':[1,2,3,5,10,20,50,100,None]
         }
     if modelName == 'ExtraTrees':
         return {
-            'max_depth':[1,2,3,5,10,20,None],
+            'max_depth':[1,2,3,5,10,20,50,100,None],
             'max_features':['sqrt','log2'],
             'criterion':['gini','entropy'],
+            'bootstrap':[True,False],
             'class_weight': ['balanced'],
         }
     if modelName == 'RandomForest':
         return {
-            'max_depth':[1,2,3,5,10,20,None],
+            'max_depth':[1,2,3,5,10,20,50,100,None],
             'max_features':['sqrt','log2'],
             'criterion':['gini','entropy'],
             'class_weight': ['balanced'],
         }
     if modelName == 'ExtraTree':
         return {
-            'max_depth':[1,2,3,5,10,20,None],
+            'max_depth':[1,2,3,5,10,20,50,100,None],
             'max_features':['sqrt','log2'],
             'criterion':['gini','entropy'],
             'class_weight': ['balanced'],
         }
     if modelName == 'DecisionTree':
         return {
-            'max_depth':[1,2,3,5,10,20,None],
+            'max_depth':[1,2,3,5,10,20,50,100,None],
             'max_features':['sqrt','log2'],
             'criterion':['gini','entropy'],
             'class_weight': ['balanced'],
@@ -90,14 +121,22 @@ def getDataset():
         './Datasets/thyroid.csv',
         './Datasets/vowel.csv',
         './Datasets/wifi.csv',
-        './Datasets/wine.csv'    
+        './Datasets/wine.csv',
+        './Datasets/20newsgroups.csv',
+        './Datasets/data0.csv',
+        './Datasets/data5.csv',
+        './Datasets/data10.csv',
+        './Datasets/data25.csv',
+        './Datasets/data50.csv',
+        './Datasets/myocardial.csv',
+        './Datasets/micromass.csv' 
     ]
 
     return datasets
 
 
 def maxSamples():
-    return 100000
+    return 1000
 
 def SplitCV():
     return 3

@@ -5,7 +5,7 @@ from pandas.core.construction import array
 import Settings as st
 from numpy.lib.function_base import append
 import pandas
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_auc_score, f1_score
 import numpy as np
 import logging
 import itertools
@@ -69,7 +69,13 @@ def NormalePredict(X_test, y_test, model, nLabel, Label):
     estimator, iterations = model
     y_pred = estimator.predict(X_test)
 
-    return accuracy_score(y_test, y_pred)
+    return {
+        'acc': accuracy_score(y_test, y_pred),
+        'balacc': balanced_accuracy_score(y_test, y_pred),
+        'microf1': f1_score(y_test, y_pred, average='micro'),
+        'macrof1': f1_score(y_test, y_pred, average='macro')
+    }
+
 
 
 def three_way(X, estimator, nLabel):
@@ -143,16 +149,19 @@ def Grid(Grid):
     return listCombinations
 
 
-def CleanJson():
+def CleanJson(datasets):
     directory = './Results/JSON/'
 
     files_in_directory = os.listdir(directory)
     filtered_files = [
         file for file in files_in_directory if file.endswith(".json")]
 
-    for file in filtered_files:
-        path_to_file = os.path.join(directory, file)
-        os.remove(path_to_file)
+    for dataset in datasets:
+        file_name = dataset.split("/")[-1]
+        file = file_name.split(".")[0] + ".json"
+        if file in filtered_files:
+            path_to_file = os.path.join(directory, file)
+            os.remove(path_to_file)
 
 
 # scrivo su file e ripulisco la variabile Results

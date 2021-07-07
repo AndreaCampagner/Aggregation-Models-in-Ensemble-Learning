@@ -1,7 +1,7 @@
 import numpy as np
 import itertools
 from Code import Utility as ut
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score,balanced_accuracy_score,f1_score,roc_auc_score
 import time
 from collections import Counter
 
@@ -46,5 +46,10 @@ def predict(X_test,y_test,model,nLabel,Label):
                 tempCombination[y[0]]=tempCombination[y[0]]+0.5
                 tempCombination[y[1]]=tempCombination[y[1]]+0.5
         y_pred.append(np.argmax(tempCombination))
-
-    return accuracy_score(y_test, np.array(y_pred))
+    y_pred = np.array(y_pred)
+    return {
+        'acc': accuracy_score(y_test, y_pred),
+        'balacc': balanced_accuracy_score(y_test, y_pred),
+        'microf1': f1_score(y_test, y_pred, average='micro'),
+        'macrof1': f1_score(y_test, y_pred, average='macro')
+    }
